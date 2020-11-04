@@ -14,8 +14,9 @@ var _PORT = ":9999"
 // The new client will connect to a server on the PORT
 // if the server is not running already, an error message
 // will be shown
-func client(process *process.Process) {
+func client(process *process.Process, _conn *net.Conn) {
 	conn, err := net.Dial(_PROTOCOL, _PORT)
+	*_conn = conn
 
 	if err != nil {
 		fmt.Println(err)
@@ -35,14 +36,29 @@ func handleServerProcess(conn net.Conn, process *process.Process) {
 		return
 	} else {
 		// run process
-		process.TerminateProcess = false
+		process.Terminate = false
 		process.RunProcess()
+	}
+}
+
+//
+func returnProcessToServer(process *process.Process, conn *net.Conn) {
+	err := gob.NewEncoder(*conn).Encode(*process)
+
+	// terminate when an error ocurrs
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 }
 
 func main() {
 	process := process.Process{}
-	go client(&process)
+	var conn net.Conn
 
+	go client(&process, &conn)
 	fmt.Scanln()
+	// return process to server
+	//go returnProcessToServer(&process, &conn)
+	conn.Close()
 }

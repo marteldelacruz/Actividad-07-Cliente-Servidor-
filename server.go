@@ -18,10 +18,10 @@ func startProcesses(processAdmin *process.ProcessAdmin) {
 	for i := 0; i < TOTAL_PROCESSES; i++ {
 		// brand new process
 		proc := process.Process{
-			PrintValues:      true,
-			TerminateProcess: false,
-			I:                0,
-			ID:               uint64(i + 1),
+			PrintValues: true,
+			Terminate:   false,
+			I:           0,
+			ID:          uint64(i + 1),
 		}
 		processAdmin.Processes = append(processAdmin.Processes, &proc)
 		// start go routine
@@ -60,7 +60,9 @@ func server(processAdmin *process.ProcessAdmin) {
 // by sending them a process the first time they
 // connect to the server
 func handleClient(client net.Conn, processAdmin *process.ProcessAdmin) {
-	lastProcess := processAdmin.Processes[len(processAdmin.Processes)-1]
+	lastIndex := len(processAdmin.Processes) - 1
+	lastProcess := processAdmin.Processes[lastIndex]
+
 	// sending process
 	err := gob.NewEncoder(client).Encode(lastProcess)
 
@@ -69,14 +71,33 @@ func handleClient(client net.Conn, processAdmin *process.ProcessAdmin) {
 		fmt.Println(err)
 		return
 	} else {
-		// remove last element
-		processAdmin.Processes = processAdmin.Processes[:len(processAdmin.Processes)-1]
+		// stop last process
+		processAdmin.Processes[lastIndex].StopProcess()
+		// remove last process from list
+		processAdmin.Processes = processAdmin.Processes[:lastIndex]
+
 	}
+	/**
+	// wait for process to be returned back
+
+	err = gob.NewDecoder(client).Decode(lastProcess)
+
+	// terminate when an error ocurrs
+	if err != nil {
+		fmt.Println(err)
+		return
+	} else {
+		// run process
+		lastProcess.RunProcess()
+		processAdmin.Processes = append(processAdmin.Processes, lastProcess)
+	}
+	*/
 }
 
 func main() {
 	processAdmin := process.ProcessAdmin{}
 	go server(&processAdmin)
+
 	// press enter to exit...
 	fmt.Scanln()
 }

@@ -7,6 +7,7 @@ import (
 
 type Task interface {
 	RunProcess()
+	StopProcess()
 }
 
 type ProcessAdmin struct {
@@ -14,10 +15,10 @@ type ProcessAdmin struct {
 }
 
 type Process struct {
-	PrintValues      bool
-	TerminateProcess bool
-	I                uint64
-	ID               uint64
+	PrintValues bool
+	Terminate   bool
+	I           uint64
+	ID          uint64
 }
 
 func (process *Process) RunProcess() {
@@ -30,8 +31,12 @@ func (process *Process) RunProcess() {
 		process.I = process.I + 1
 		time.Sleep(time.Millisecond * 500)
 		// terminate process
-		if process.TerminateProcess {
+		if process.Terminate {
 			break
 		}
 	}
+}
+
+func (process *Process) StopProcess() {
+	process.Terminate = true
 }
