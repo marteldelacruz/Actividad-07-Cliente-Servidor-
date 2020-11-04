@@ -41,7 +41,7 @@ func handleServerProcess(conn net.Conn, process *process.Process) {
 	}
 }
 
-//
+// Returns the process to the server
 func returnProcessToServer(process *process.Process, conn *net.Conn) {
 	err := gob.NewEncoder(*conn).Encode(*process)
 
@@ -49,7 +49,10 @@ func returnProcessToServer(process *process.Process, conn *net.Conn) {
 	if err != nil {
 		fmt.Println(err)
 		return
+	} else {
+		process.StopProcess()
 	}
+
 }
 
 func main() {
@@ -58,7 +61,10 @@ func main() {
 
 	go client(&process, &conn)
 	fmt.Scanln()
+
 	// return process to server
-	//go returnProcessToServer(&process, &conn)
+	go returnProcessToServer(&process, &conn)
+
+	fmt.Scanln()
 	conn.Close()
 }

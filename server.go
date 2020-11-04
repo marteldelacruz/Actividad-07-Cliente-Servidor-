@@ -63,6 +63,9 @@ func handleClient(client net.Conn, processAdmin *process.ProcessAdmin) {
 	lastIndex := len(processAdmin.Processes) - 1
 	lastProcess := processAdmin.Processes[lastIndex]
 
+	// stop last process
+	processAdmin.Processes[lastIndex].StopProcess()
+
 	// sending process
 	err := gob.NewEncoder(client).Encode(lastProcess)
 
@@ -71,15 +74,12 @@ func handleClient(client net.Conn, processAdmin *process.ProcessAdmin) {
 		fmt.Println(err)
 		return
 	} else {
-		// stop last process
-		processAdmin.Processes[lastIndex].StopProcess()
 		// remove last process from list
 		processAdmin.Processes = processAdmin.Processes[:lastIndex]
 
 	}
-	/**
-	// wait for process to be returned back
 
+	// wait for process to be returned back
 	err = gob.NewDecoder(client).Decode(lastProcess)
 
 	// terminate when an error ocurrs
@@ -88,10 +88,11 @@ func handleClient(client net.Conn, processAdmin *process.ProcessAdmin) {
 		return
 	} else {
 		// run process
+		lastProcess.ContinueProcess()
 		lastProcess.RunProcess()
 		processAdmin.Processes = append(processAdmin.Processes, lastProcess)
 	}
-	*/
+
 }
 
 func main() {

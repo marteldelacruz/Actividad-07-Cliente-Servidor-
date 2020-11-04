@@ -8,6 +8,7 @@ import (
 type Task interface {
 	RunProcess()
 	StopProcess()
+	ContinueProcess()
 }
 
 type ProcessAdmin struct {
@@ -39,4 +40,8 @@ func (process *Process) RunProcess() {
 
 func (process *Process) StopProcess() {
 	process.Terminate = true
+}
+
+func (process *Process) ContinueProcess() {
+	process.Terminate = false
 }
