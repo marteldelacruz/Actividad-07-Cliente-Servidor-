@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"net"
 
@@ -39,8 +40,10 @@ func server(processAdmin *process.ProcessAdmin) {
 		fmt.Println(err)
 		return
 	}
-
+	// creates the new processes
 	startProcesses(processAdmin)
+
+	// loop to handle clients
 	for {
 		client, err := server.Accept()
 
@@ -49,27 +52,31 @@ func server(processAdmin *process.ProcessAdmin) {
 			continue
 		}
 
-		go handleClient(client)
+		go handleClient(client, processAdmin)
 	}
 }
 
-func handleClient(client net.Conn) {
-	data := make([]byte, 100)
-	br, err := client.Read(data)
+// This function takes charge of handling clients
+// by sending them a process the first time they
+// connect to the server
+func handleClient(client net.Conn, processAdmin *process.ProcessAdmin) {
+	lastProcess := processAdmin.Processes[len(processAdmin.Processes)-1]
+	// sending process
+	err := gob.NewEncoder(client).Encode(lastProcess)
 
 	// terminate when an error ocurrs
 	if err != nil {
 		fmt.Println(err)
 		return
 	} else {
-		fmt.Println("Message: ", data[:br])
+		// remove last element
+		processAdmin.Processes = processAdmin.Processes[:len(processAdmin.Processes)-1]
 	}
 }
 
 func main() {
 	processAdmin := process.ProcessAdmin{}
 	go server(&processAdmin)
-
-	//process.Process()
+	// press enter to exit...
 	fmt.Scanln()
 }
